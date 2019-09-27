@@ -7,6 +7,7 @@ df = pd.read_csv('./extensive_data.csv')
 active_statuses = ['Active', 'In Progress', 'On Hold', 'Pending']
 pending_statuses = ['On Hold', 'Pending']
 resolved_statuses = ['Completed', 'Resolved', 'Closed', 'Submitted']
+service_desk_team = ['Leigh Browning', ' Xyrus Roxas', 'Elliott Beeten', 'Daniel Bowen', 'Marc Falzon']
 
 # datetime_columns =['CreatedOn', 'LastModified', 'ResolvedOn', 'SLOTarget']
 # for each in datetime_columns:
@@ -25,7 +26,9 @@ df = df.assign(CreatedOn_year=df.CreatedOn.dt.year,
   ResolvedOn_year=df.ResolvedOn.dt.year,
  ResolvedOn_month=df.ResolvedOn.dt.month,
   ResolvedOn_day=df.ResolvedOn.dt.day,
-  TicketDuration=(df['ResolvedOn'] - df['CreatedOn']).dt.days)
+  TicketDuration=(df['ResolvedOn'] - df['CreatedOn']).dt.days,
+  Created_month_name = df.CreatedOn.dt.month_name(),
+  Resolved_month_name = df.ResolvedOn.dt.month_name())
 
 
 print(df.head())
@@ -33,6 +36,10 @@ print(df.head())
 #Plot and Save Aged Tickets to File    
 sns.boxplot(y='AssignedToUser', x='AgeInDays', data=df[df['Status'].isin(active_statuses)&(df.AssignedToUserCompany=='Minerals Australia')]).get_figure().savefig("Aged_Ticket_Report.png", bbox_inches='tight', dpi=200)
 
+# Plot Resolution by Duration
+sns.boxplot(y='AssignedToUser', x='AgeInDays', data=df[df['Status'].isin(resolved_statuses)&(df.AssignedToUserCompany=='Minerals Australia')]).get_figure().savefig("Aged_Ticket_Report.png", bbox_inches='tight', dpi=200)
+
+# Plot Tickets Created by month - split IR/SR
 
 """
 
@@ -68,6 +75,11 @@ Filtered Date for query:
     (closed_tickets_df['AssignedToUserCompany']=='Minerals Australia')&
     (closed_tickets_df['ResolvedOn'].dt.year==2019)]
 
+Onboarding requests
+    df.Title[df.Title.str.contains('Onboarding actions') & (df.CreatedOn.dt.month==8)].count()
+
+Offboarding requests
+    df.Title[df.Title.str.contains('Offboarding actions') & (df.CreatedOn.dt.month==8)&(df.CreatedOn_year==2019)].count()
 
 Specific Plots:
 *****
