@@ -28,10 +28,34 @@ df = df.assign(CreatedOn_year=df.CreatedOn.dt.year,
   ResolvedOn_day=df.ResolvedOn.dt.day,
   TicketDuration=(df['ResolvedOn'] - df['CreatedOn']).dt.days,
   Created_month_name = df.CreatedOn.dt.month_name(),
-  Resolved_month_name = df.ResolvedOn.dt.month_name())
+  Resolved_month_name = df.ResolvedOn.dt.month_name(),
+  Created_period = df.CreatedOn.dt.to_period('M'),
+  Resolved_period = df.ResolvedOn.dt.to_period('M'),
+  )
 
 
-print(df.head())
+# organse seperate df for monthly rundown
+ser_createdon = df.RequestId.groupby(df.Created_period).count()
+ser_resolvedon = df.RequestId.groupby(df.Resolved_period).count()
+ser_mean_dur = df.TicketDuration.groupby(df.Created_period).mean()
+ser_max_dur = df.TicketDuration.groupby(df.Created_period).max()
+ser_onboard = df.RequestId[df.Title.str.contains('Onboarding actions')].groupby(df.Created_period).count()
+ser_offboard = df.RequestId[df.Title.str.contains('Offboarding actions')].groupby(df.Created_period).count()
+
+# Combine seperate dataframes into Monthly rundown
+# df_combined = pd.merge(df_createdon, df_resolvedon, right_index=True, left_index=True)
+df_combined = pd.DataFrame(
+    {'Created': ser_createdon,
+    'Resolved': ser_resolvedon,
+    'Mean Dur':ser_mean_dur,
+    'Max Dur': ser_max_dur,
+    'Onboarding': ser_onboard,
+    'Offboarding': ser_offboard,
+
+    }
+)
+
+print(df.columns)
 
 #Plot and Save Aged Tickets to File    
 sns.boxplot(y='AssignedToUser', x='AgeInDays', data=df[df['Status'].isin(active_statuses)&(df.AssignedToUserCompany=='Minerals Australia')]).get_figure().savefig("Aged_Ticket_Report.png", bbox_inches='tight', dpi=200)
