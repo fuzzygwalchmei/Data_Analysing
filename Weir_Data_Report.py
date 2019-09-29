@@ -55,7 +55,10 @@ df_combined = pd.DataFrame(
     }
 )
 
-print(df.columns)
+print(df_combined)
+
+# print each column as a seperate plot
+df_combined.plot(subplots=True)
 
 #Plot and Save Aged Tickets to File    
 sns.boxplot(y='AssignedToUser', x='AgeInDays', data=df[df['Status'].isin(active_statuses)&(df.AssignedToUserCompany=='Minerals Australia')]).get_figure().savefig("Aged_Ticket_Report.png", bbox_inches='tight', dpi=200)
